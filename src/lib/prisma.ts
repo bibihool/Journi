@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
@@ -6,13 +8,28 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function getDatabaseUrl(): string {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL;
-  }
   if (process.env.VERCEL) {
-    return "file:/tmp/dev.db";
+    const tmpDbPath = "/tmp/dev.db";
+    if (!fs.existsSync(tmpDbPath)) {
+      const candidates = [
+        path.join(process.cwd(), "prisma", "template.db"),
+        path.join(process.cwd(), "dev.db"),
+      ];
+      for (const src of candidates) {
+        if (fs.existsSync(src)) {
+          try {
+            fs.copyFileSync(src, tmpDbPath);
+            break;
+          } catch (err) {
+            console.error(`Failed to copy ${src} to /tmp`, err);
+          }
+        }
+      }
+    }
+    return `file:${tmpDbPath}`;
   }
-  return "file:./dev.db";
+
+  return process.env.DATABASE_URL || "file:./dev.db";
 }
 
 function createPrismaClient(): PrismaClient {
