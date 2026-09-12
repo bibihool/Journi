@@ -161,3 +161,4 @@ TripMate/
 
 MIT License. Designed and built with ❤️ for travelers everywhere.
 "# Journi" 
+"# Journi" 
