@@ -5,9 +5,19 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+function getDatabaseUrl(): string {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+  if (process.env.VERCEL) {
+    return "file:/tmp/dev.db";
+  }
+  return "file:./dev.db";
+}
+
 function createPrismaClient(): PrismaClient {
-  const rawUrl = process.env.DATABASE_URL || "file:./dev.db";
-  const adapter = new PrismaBetterSqlite3({ url: rawUrl });
+  const url = getDatabaseUrl();
+  const adapter = new PrismaBetterSqlite3({ url });
   return new PrismaClient({ adapter });
 }
 
