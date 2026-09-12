@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Conversation {
+  id         String      @id @default(cuid())
+  title      String      @default("New Trip")
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  messages   Message[]
+  savedTrips SavedTrip[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  createdAt      DateTime     @default(now())
+}
+
+model SavedTrip {
+  id             String        @id @default(cuid())
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  title          String
+  destination    String?
+  duration       String?
+  summary        String?
+  itinerary      String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
